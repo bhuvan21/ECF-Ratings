@@ -27,7 +27,7 @@ class Game {
   final String opponentName;
   final int opponentID;
   final int opponentGrade;
-  final int increment;
+  final double increment;
   final int myGrade;
   final int eventCode;
   final String organisationName;
@@ -43,7 +43,7 @@ class Game {
       opponentName = json["opponent_name"] == null ? null : json["opponent_name"],
       opponentID = json["opponent_no"] == null ? null : int.tryParse(json["opponent_no"]),
       opponentGrade = json["opponent_grade"] == null ? null : int.tryParse(json["opponent_grade"]),
-      increment = json["increment"] == null ? null : int.tryParse(json["increment"]),
+      increment = json["increment"] == null ? null : double.tryParse(json["increment"]),
       myGrade = json["player_grade"] == null ? null : int.tryParse(json["player_grade"]),
       eventCode = json["event_code"] == null ? null : int.tryParse(json["event_code"]),
       organisationName = json["org_name"] == null ? null : json["org_name"],

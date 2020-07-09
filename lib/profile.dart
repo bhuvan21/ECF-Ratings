@@ -30,7 +30,7 @@ class _ProfileState extends State<Profile> {
       loading = true;
       getAllInfo().then((player){
         myPlayer = player;
-
+        Singleton().selectedPlayer = myPlayer;
         pages.add(buildFirstListView());
         setState((){ loading = false; });
       });
@@ -42,10 +42,76 @@ class _ProfileState extends State<Profile> {
       return null;
     }
     return ListView.builder(
-      itemCount: myPlayer.standardGames.length,
+      itemCount: myPlayer.standardGames.length + 1,
       itemBuilder: (BuildContext context, int index) {
+        index = index - 1;
+        if (index == -1) {
+          return ListTile(
+            title: Text(myPlayer.name + " : " + myPlayer.standardGames[0].myGrade.toString())
+          );
+        }
+        Game game = myPlayer.standardGames[index];
+
+
+        if (game.opponentName == "") {
+          return ListTile(
+            title: Text("Bye")
+          );
+        }
+
+        if (game.increment == 0.0 && game.myGrade == null && game.opponentGrade == null) {
+          return ListTile (
+            title: Text(myPlayer.name + " vs " + game.opponentName)
+          );
+        }
+
+        String operator = "";
+        if (game.increment > 0) {
+          operator = "+";
+        }
+        else {
+          operator = "-";
+        }
+
+        Color meColor;
+        Color themColor;
+
+        if (game.increment > 0) {
+          meColor = Colors.lightGreen;
+          themColor = Colors.red;
+        }
+        else {
+          meColor = Colors.red;
+          themColor = Colors.lightGreen;
+        }
+
+        print(game.opponentName);
+        int t = 0;
+        print(game.myGrade);
         return new ListTile(
-          title: Text(myPlayer.standardGames[index].opponentName),
+          title: RichText(text:
+          TextSpan(
+            style: TextStyle(color:Colors.black),
+            children: [
+              TextSpan(
+                text:myPlayer.name + " ",
+              ),
+              TextSpan(
+                text: "(" +  (game.myGrade - game.increment).round().toString() + " " + operator +  (game.increment.round().abs()).toString() + ")",
+                style: TextStyle(color:meColor)
+              ),
+              TextSpan(
+                text: " vs "
+              ),
+              TextSpan(
+                text: game.opponentName + " ",
+              ),
+              TextSpan(
+                text: "(" + game.opponentGrade.toString() + ")",
+                style: TextStyle(color: themColor)
+              )
+            ]
+          )),
           onTap: () => print(myPlayer.standardGames[index].opponentName),
         );
       },
@@ -160,8 +226,31 @@ class _ProfileState extends State<Profile> {
     return workingPlayer;
   }
 
+  Widget buildBar(BuildContext context) {
+    if (loading) {
+      return null;
+    }
+    else {
+      String text = "My Profile";
+      if (Singleton().isProfileViewDetail) {
+        text = "Profile";
+      }
+
+      int pCode = 0;
+      if (Singleton().isPeer(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode)) {
+        pCode = 2;
+      }
+      else if (Singleton().isFavourite(Singleton().selectedPlayer.name +"|" + Singleton().selectedPlayer.refCode)) {
+        pCode = 1;
+      }
+
+      return AppBar(title: Center(child:Text(text)),actions: <Widget>[RelationButton(pCode)],);
+    }
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: buildBar(context),
       body: Container(
         child: buildMain(context),
       ),
@@ -217,8 +306,8 @@ class DetailProfile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Singleton().isProfileViewDetail = true;
+
     return Scaffold(
-      appBar: AppBar(title: Center(child:Text("Profile")),),
       body: Profile(),
     );
   }
@@ -229,8 +318,53 @@ class MyProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     Singleton().isProfileViewDetail = false;
     return Scaffold(
-      appBar: AppBar(title: Center(child:Text("My Profile")),),
       body: Profile(),
     );
   }
+}
+
+
+class RelationButton extends StatefulWidget {
+  int index;
+  RelationButton(this.index);
+
+  @override
+  _RelationButtonState createState() => _RelationButtonState();
+}
+
+class _RelationButtonState extends State<RelationButton> {
+
+
+  @override
+  Widget build(BuildContext context) {
+    if(widget.index == 0 ) {
+      return IconButton(icon:Icon(Icons.star_border), onPressed: onTap,);
+    }
+    else if (widget.index == 1) {
+      return IconButton(icon: Icon(Icons.star, color: Colors.yellow,), onPressed: onTap);
+    }
+    else {
+      return IconButton(icon: Icon(Icons.star, color: Colors.green,), onPressed: onTap);
+    }
+  }
+
+  void onTap() {
+    setState(() {
+      if (widget.index == 2) {
+        widget.index = 0;
+        Singleton().removeFavourite(Singleton().selectedPlayer.name +"|" + Singleton().selectedPlayer.refCode );
+        Singleton().removePeer(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode );
+      }
+      else if (widget.index == 1) {
+        widget.index = widget.index + 1;
+        Singleton().addPeer(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode );
+      }
+      else {
+        widget.index = widget.index + 1;
+        Singleton().addFavourite(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode);
+      }
+    });
+
+  }
+
 }

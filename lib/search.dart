@@ -138,7 +138,21 @@ class _SearchState extends State<Search> {
   Widget _buildList() {
 
     if (_searchText.isEmpty) {
-      return Text("Favourites n peers");
+      return ListView.builder(
+        itemCount: Singleton().favourites.length ,
+        itemBuilder: (BuildContext context, int index) {
+          String add = "";
+          if (Singleton().isPeer(Singleton().favourites[index])) {
+            add = "(Peer) ";
+          }
+
+          String toShow = Singleton().favourites[index].split("|")[0];
+
+          return new ListTile(
+            title: Text(add + toShow)
+          );
+        },
+      );
     }
     else {
       if (loading) {
