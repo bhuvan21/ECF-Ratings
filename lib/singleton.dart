@@ -71,5 +71,10 @@ class Singleton {
     prefs.setStringList("favourites", Singleton().favourites);
   }
 
+  void setMe(int me) async {
+    Singleton().myID = me;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setInt("myID", Singleton().myID);
+  }
 
 }

@@ -101,7 +101,7 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin  {
 
   void _start_preferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    Singleton().myID = prefs.getInt('myID') ?? 120787;
+    Singleton().myID = prefs.getInt('myID') ?? 0;
 
     if (!prefs.containsKey("favourites")) {
       prefs.setStringList("favourites", []);

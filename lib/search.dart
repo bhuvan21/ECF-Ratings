@@ -149,7 +149,15 @@ class _SearchState extends State<Search> {
           String toShow = Singleton().favourites[index].split("|")[0];
 
           return new ListTile(
-            title: Text(add + toShow)
+            title: Text(add + toShow),
+            onTap: () => {
+              Singleton().selectedID = Singleton().favourites[index].split("|")[1],
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => DetailProfile()),
+              )
+            }
+
           );
         },
       );

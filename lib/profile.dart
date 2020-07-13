@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'singleton.dart';
 import 'player.dart';
 import 'package:http/http.dart' as http;
+import 'graphing.dart';
 
 class Profile extends StatefulWidget {
   @override
@@ -31,40 +32,56 @@ class _ProfileState extends State<Profile> {
       getAllInfo().then((player){
         myPlayer = player;
         Singleton().selectedPlayer = myPlayer;
-        pages.add(buildFirstListView());
+
         setState((){ loading = false; });
       });
     });
   }
 
-  Widget buildFirstListView() {
+  Widget buildListView(int i) {
+    if (loading) {
+      return null;
+    }
+    List<Game> gameList = [];
+    if (i == 0) {
+      gameList = myPlayer.standardGames;
+    }
+    else {
+      gameList = myPlayer.rapidGames;
+    }
+
     if (myPlayer == Player.empty()) {
       return null;
     }
     return ListView.builder(
-      itemCount: myPlayer.standardGames.length + 1,
+      itemCount: gameList.length + 1,
       itemBuilder: (BuildContext context, int index) {
         index = index - 1;
+        String type;
+        if(i == 0) {
+          type = "Standard";
+        }
+        else {
+          type = "Rapid";
+        }
         if (index == -1) {
           return ListTile(
-            title: Text(myPlayer.name + " : " + myPlayer.standardGames[0].myGrade.toString())
+            title: Text(myPlayer.name + " : " + gameList[0].myGrade.toString() + " : " +type)
           );
         }
-        Game game = myPlayer.standardGames[index];
-
-
+        Game game = gameList[index];
+        print(game.opponentName);
         if (game.opponentName == "") {
           return ListTile(
             title: Text("Bye")
           );
         }
 
-        if (game.increment == 0.0 && game.myGrade == null && game.opponentGrade == null) {
+        if ((game.increment == 0.0 && game.myGrade == null && game.opponentGrade == null)|| game.increment == null) {
           return ListTile (
             title: Text(myPlayer.name + " vs " + game.opponentName)
           );
         }
-
         String operator = "";
         if (game.increment > 0) {
           operator = "+";
@@ -75,7 +92,6 @@ class _ProfileState extends State<Profile> {
 
         Color meColor;
         Color themColor;
-
         if (game.increment > 0) {
           meColor = Colors.lightGreen;
           themColor = Colors.red;
@@ -85,9 +101,6 @@ class _ProfileState extends State<Profile> {
           themColor = Colors.lightGreen;
         }
 
-        print(game.opponentName);
-        int t = 0;
-        print(game.myGrade);
         return new ListTile(
           title: RichText(text:
           TextSpan(
@@ -112,7 +125,7 @@ class _ProfileState extends State<Profile> {
               )
             ]
           )),
-          onTap: () => print(myPlayer.standardGames[index].opponentName),
+          onTap: () => print(gameList[index].opponentName),
         );
       },
     );
@@ -165,7 +178,7 @@ class _ProfileState extends State<Profile> {
     else {
       refID = Singleton().selectedID.toString();
     }
-
+    print(refID);
     final mainResponse = await http.get('https://www.ecfgrading.org.uk/sandbox/new/api.php?v2/players/code/'+refID);
 
     if (mainResponse.statusCode == 200) {
@@ -234,17 +247,19 @@ class _ProfileState extends State<Profile> {
       String text = "My Profile";
       if (Singleton().isProfileViewDetail) {
         text = "Profile";
-      }
+        int pCode = 0;
+        if (Singleton().isPeer(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode)) {
+          pCode = 2;
+        }
+        else if (Singleton().isFavourite(Singleton().selectedPlayer.name +"|" + Singleton().selectedPlayer.refCode)) {
+          pCode = 1;
+        }
 
-      int pCode = 0;
-      if (Singleton().isPeer(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode)) {
-        pCode = 2;
+        return AppBar(title: Center(child:Text(text)),actions: <Widget>[RelationButton(pCode), IdentityButton()],);
       }
-      else if (Singleton().isFavourite(Singleton().selectedPlayer.name +"|" + Singleton().selectedPlayer.refCode)) {
-        pCode = 1;
+      else {
+        return AppBar(title: Center(child:Text(text)),);
       }
-
-      return AppBar(title: Center(child:Text(text)),actions: <Widget>[RelationButton(pCode)],);
     }
   }
 
@@ -263,6 +278,16 @@ class _ProfileState extends State<Profile> {
       return Center(child:CircularProgressIndicator());
     }
     else {
+      if (myPlayer.error != 0) {
+        print(myPlayer.error);
+        return Text("Error");
+      }
+      pages.add(ChessGraph([myPlayer.standardGames]));
+      pages.add(buildListView(0));
+      pages.add(ChessGraph([myPlayer.rapidGames]));
+      pages.add(buildListView(1));
+
+
       return SizedBox.expand(
           child:Container(
           child: Column(
@@ -333,8 +358,6 @@ class RelationButton extends StatefulWidget {
 }
 
 class _RelationButtonState extends State<RelationButton> {
-
-
   @override
   Widget build(BuildContext context) {
     if(widget.index == 0 ) {
@@ -364,7 +387,38 @@ class _RelationButtonState extends State<RelationButton> {
         Singleton().addFavourite(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode);
       }
     });
+  }
+}
 
+class IdentityButton extends StatefulWidget {
+  @override
+  _IdentityButtonState createState() => _IdentityButtonState();
+}
+
+class _IdentityButtonState extends State<IdentityButton> {
+
+  bool selected = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (selected) {
+      return IconButton(icon: Icon(Icons.person), onPressed: onTap);
+    }
+    return IconButton(icon: Icon(Icons.person_outline), onPressed: onTap);
   }
 
+  void onTap() {
+    if (!selected) {
+      setState(() {
+        selected = true;
+        
+        if (int.tryParse(Singleton().selectedPlayer.refCode) == null) {
+          Singleton().setMe(int.tryParse(Singleton().selectedPlayer.refCode.substring(0, (Singleton().selectedPlayer.refCode).length-1 )));
+        }
+        else {
+          Singleton().setMe(int.tryParse(Singleton().selectedPlayer.refCode));
+        }
+      });
+    }
+  }
 }
