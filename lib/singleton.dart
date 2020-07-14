@@ -19,6 +19,8 @@ class Singleton {
 
   Player selectedPlayer;
 
+
+
   void removeFavourite(String fav) async {
     for (int i = 0; i < Singleton().favourites.length; i++) {
       if (Singleton().favourites[i] == fav) {

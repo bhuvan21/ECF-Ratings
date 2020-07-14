@@ -282,9 +282,9 @@ class _ProfileState extends State<Profile> {
         print(myPlayer.error);
         return Text("Error");
       }
-      pages.add(ChessGraph([myPlayer.standardGames]));
+      pages.add(ChessGraph([myPlayer.standardGames], [myPlayer.name]));
       pages.add(buildListView(0));
-      pages.add(ChessGraph([myPlayer.rapidGames]));
+      pages.add(ChessGraph([myPlayer.rapidGames], [myPlayer.name]));
       pages.add(buildListView(1));
 
 
@@ -293,7 +293,7 @@ class _ProfileState extends State<Profile> {
           child: Column(
             children : <Widget> [
               Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 5),
                 child:Container(
                   height: 100,
                   child:Column(
