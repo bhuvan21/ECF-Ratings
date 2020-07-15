@@ -12,6 +12,8 @@ class Analysis extends StatefulWidget {
   _AnalysisState createState() => _AnalysisState();
 }
 
+
+
 class _AnalysisState extends State<Analysis> {
 
   bool loading = true;
@@ -53,18 +55,92 @@ class _AnalysisState extends State<Analysis> {
         rapidGames.add(myPlayers[i].rapidGames);
         names.add(myPlayers[i].name);
       }
-      pages.add(ChessGraph(standardGames, names));
-      pages.add(ChessGraph(rapidGames, names));
-      print(standardGames.length);
+
+
+      ChessGraph standardGraph = ChessGraph(standardGames, names);
+      ChessGraph rapidGraph = ChessGraph(rapidGames, names);
+
+      List<Widget> info = [];
+      for (int i = 0; i < 2; i++) {
+        List<List<Game>> data = [];
+        int myIncrease = 0;
+        int theirIncrease = 0;
+        print(i);
+        if (i == 0) {
+          data = standardGames;
+        }
+        else {
+          data = rapidGames;
+        }
+
+        List<List<Game>> newData = [];
+        for (int i = 0; i < data.length; i++) {
+          List<Game> games = data[i];
+          newData.add([]);
+          for (int j = 0; j < games.length; j++) {
+            Game game = games[j];
+            if (!((game.increment == 0.0 && game.myGrade == null && game.opponentGrade == null)|| game.increment == null)) {
+              newData[i].add(game);
+            }
+          }
+        }
+        int myGameCount = 0;
+        int theirGameCount = 0;
+        for (int i = 0; i < newData.length; i ++) {
+          if (i == 0) {
+            myIncrease = newData[i][0].myGrade - newData[i].last.myGrade;
+            myGameCount = newData[i].length;
+          }
+          else {
+            theirIncrease = theirIncrease + newData[i][0].myGrade - newData[i][newData[i].length-1].myGrade;
+            theirGameCount = theirGameCount + newData[i].length;
+          }
+        }
+
+        String myAverage = (myIncrease/myGameCount).toStringAsFixed(1);
+        String theirAverage = (theirIncrease/theirGameCount).toStringAsFixed(1);
+
+        info.add(Column(
+
+          children: <Widget>[
+            ChessGraph(newData, names),
+            Expanded(child:Container()),
+
+            Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Padding(child: Text("You increased by an average of $myAverage points per game!"), padding: EdgeInsets.fromLTRB(0, 0, 0, 10)),
+                  Text("Peers increased by an average of $theirAverage points per game!")
+                ],
+              )
+
+
+          ],
+        ));
+      }
+      pages = [];
+      pages.add(info[0]);
+      pages.add(info[1]);
+
+
+
       return SizedBox.expand(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(5, 40, 5, 40),
-          child :Container(
-            child: PageView.builder(itemBuilder: (context, position) => pages[position]),
-          )
+            padding: EdgeInsets.fromLTRB(5, 40, 5, 40),
+            child :Container(
+              child: PageView.builder(itemBuilder: (context, position) => pages[position]),
+            )
         ),
       );
+
+
+
     }
+
+
+
+
+
   }
 
   Future<List<Player>> getAllInfo() async {

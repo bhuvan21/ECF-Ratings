@@ -11,6 +11,7 @@ class ChessGraph extends StatefulWidget {
   List<List<Game>> data;
   List<String> names;
   ChessGraph(this.data, this.names);
+  List<List<Game>> newdata;
 
   @override
   _ChessGraphState createState() => _ChessGraphState();
@@ -30,10 +31,10 @@ class _ChessGraphState extends State<ChessGraph> {
     xAxis = [];
     colors = colors + colors + colors + colors;
 
-    print(widget.data.length);
+
     List<List<Game>> newData = [];
     for (int i = 0; i < widget.data.length; i++) {
-      print(widget.data[i][0]);
+
       List<Game> games = widget.data[i];
       newData.add([]);
       for (int j = 0; j < games.length; j++) {
@@ -68,6 +69,7 @@ class _ChessGraphState extends State<ChessGraph> {
 
     }
     widget.data = newData;
+    widget.newdata = newData;
     return Padding(
       padding: EdgeInsets.fromLTRB(15, 10, 30, 10),
       child:Column(children: <Widget>[
@@ -116,10 +118,7 @@ class _ChessGraphState extends State<ChessGraph> {
     }
 
     return Container(
-        color: Colors.blue,
         child: Column(
-
-
         children: bigrows
     ));
   }
