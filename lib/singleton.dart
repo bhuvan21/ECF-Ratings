@@ -12,7 +12,7 @@ class Singleton {
 
   bool isProfileViewDetail;
   int myID;
-  String selectedID;
+  int selectedID;
 
   List<String> favourites;
   List<String> peers;

@@ -66,6 +66,9 @@ class _ChessGraphState extends State<ChessGraph> {
           }
         }
       }
+      if (newData.last.length == 0) {
+        newData.removeLast();
+    }
 
     }
     widget.data = newData;
@@ -117,10 +120,10 @@ class _ChessGraphState extends State<ChessGraph> {
       bigrows.add(Row(children: rows,));
     }
 
-    return Container(
+    return Align(child:Container(
         child: Column(
         children: bigrows
-    ));
+    )), alignment: Alignment.topCenter,);
   }
 
   FlGridData getGridData() {

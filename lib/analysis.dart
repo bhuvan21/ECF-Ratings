@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'player.dart';
 import 'graphing.dart';
-import 'package:http/http.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'singleton.dart';
+import 'helpers.dart';
 
 class Analysis extends StatefulWidget {
 
@@ -45,7 +43,13 @@ class _AnalysisState extends State<Analysis> {
     }
     else {
       if (myPlayers.length == 0) {
-        return Text("Select urself");
+        return Text("Select your identity");
+      }
+      else if (myPlayers.length == 1) {
+        if (Singleton().peers.length == 0) {
+          return Text("You need peers to use analysis, add players as peers by searching for them, and pressing the star button in the top right until it goes green.");
+        }
+        return Text("You need to select your identity");
       }
       List<List<Game>> standardGames = [];
       List<List<Game>> rapidGames = [];
@@ -65,7 +69,7 @@ class _AnalysisState extends State<Analysis> {
         List<List<Game>> data = [];
         int myIncrease = 0;
         int theirIncrease = 0;
-        print(i);
+
         if (i == 0) {
           data = standardGames;
         }
@@ -92,8 +96,11 @@ class _AnalysisState extends State<Analysis> {
             myGameCount = newData[i].length;
           }
           else {
-            theirIncrease = theirIncrease + newData[i][0].myGrade - newData[i][newData[i].length-1].myGrade;
-            theirGameCount = theirGameCount + newData[i].length;
+            if (newData[i].length != 0) {
+              theirIncrease = theirIncrease + newData[i][0].myGrade - newData[i].last.myGrade;
+              theirGameCount = theirGameCount + newData[i].length;
+            }
+
           }
         }
 
@@ -104,7 +111,6 @@ class _AnalysisState extends State<Analysis> {
 
           children: <Widget>[
             ChessGraph(newData, names),
-            Expanded(child:Container()),
 
             Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -128,7 +134,7 @@ class _AnalysisState extends State<Analysis> {
         child: Padding(
             padding: EdgeInsets.fromLTRB(5, 40, 5, 40),
             child :Container(
-              child: PageView.builder(itemBuilder: (context, position) => pages[position]),
+              child: PageView.builder(itemBuilder: (context, position) => pages[position], itemCount: pages.length,),
             )
         ),
       );
@@ -146,103 +152,28 @@ class _AnalysisState extends State<Analysis> {
   Future<List<Player>> getAllInfo() async {
 
     List<Player> workingPlayers = [];
-
     for (int i = 0; i < Singleton().peers.length+1; i++) {
       int refID;
       if (i == 0){
         refID = Singleton().myID;
         if (refID == 0){
-          Player error =Player.empty();
+          Player error = Player.empty();
           error.error = 1;
           workingPlayers.add(error);
           return workingPlayers;
         }
-        Player player = await getPlayer(refID);
-        workingPlayers.add(player);
       }
       else {
-
-        String temp = Singleton().peers[i-1].split("|")[1];
-        if (int.tryParse(temp) == null) {
-          refID = int.tryParse(temp.substring(0, (temp.length-1 )));
-        }
-        else {
-          refID = int.tryParse(temp);
-        }
-        Player player = await getPlayer(refID);
-        workingPlayers.add(player);
+        refID = int.tryParse(Singleton().peers[i-1].split("|")[1]);
       }
+      Player player = await getPlayer(refID);
+      workingPlayers.add(player);
     }
     //print(workingPlayers.length);
     return workingPlayers;
   }
 
-  Future<Player> getPlayer(int refID) async {
-    Player workingPlayer = Player.empty();
-    if (refID == 0) {
-      return Player.empty();
-    }
 
-    print(refID);
-    final mainResponse = await http.get('https://www.ecfgrading.org.uk/sandbox/new/api.php?v2/players/code/'+refID.toString());
-
-    if (mainResponse.statusCode == 200) {
-      var json = jsonDecode(mainResponse.body);
-
-      workingPlayer = Player.fromJson(json);
-    }
-
-    else {
-      workingPlayer = Player.empty();
-      workingPlayer.error = 2;
-      return workingPlayer;
-    }
-
-    if (workingPlayer.error == 0) {
-      final game1Response = await http.get('https://www.ecfgrading.org.uk/sandbox/new/api.php?v2/games/Standard/player/$refID/limit/100');
-
-      if (game1Response.statusCode == 200) {
-        var json = jsonDecode(game1Response.body);
-        List games = json["games"];
-        List<Game> gameObjects = [];
-        for (int i = 0; i < games.length; i++) {
-          Game game = Game.fromJson(games[i]);
-          game.gameType = "S";
-          gameObjects.add(game);
-        }
-        workingPlayer.standardGames = gameObjects;
-      }
-
-      else {
-        workingPlayer = Player.empty();
-        workingPlayer.error = 2;
-        return workingPlayer;
-      }
-    }
-
-    if (workingPlayer.error == 0) {
-      final game2Response = await http.get('https://www.ecfgrading.org.uk/sandbox/new/api.php?v2/games/Rapid/player/$refID/limit/100');
-
-      if (game2Response.statusCode == 200) {
-        var json = jsonDecode(game2Response.body);
-        List games = json["games"];
-        List<Game> gameObjects = [];
-        for (int i = 0; i < games.length; i++) {
-          Game game = Game.fromJson(games[i]);
-          game.gameType = "R";
-          gameObjects.add(game);
-        }
-        workingPlayer.rapidGames = gameObjects;
-      }
-
-      else {
-        workingPlayer = Player.empty();
-        workingPlayer.error = 2;
-        return workingPlayer;
-      }
-    }
-    return workingPlayer;
-  }
 
 
 }

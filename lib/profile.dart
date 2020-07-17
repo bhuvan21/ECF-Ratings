@@ -6,6 +6,7 @@ import 'singleton.dart';
 import 'player.dart';
 import 'package:http/http.dart' as http;
 import 'graphing.dart';
+import 'helpers.dart';
 
 class Profile extends StatefulWidget {
   @override
@@ -32,8 +33,10 @@ class _ProfileState extends State<Profile> {
       getAllInfo().then((player){
         myPlayer = player;
         Singleton().selectedPlayer = myPlayer;
+        if (this.mounted) {
+          setState((){ loading = false; });
+        }
 
-        setState((){ loading = false; });
       });
     });
   }
@@ -164,11 +167,11 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<Player> getAllInfo() async {
-    String refID;
+    int refID;
     Player workingPlayer;
     List<Club> clubs = [];
     if (!Singleton().isProfileViewDetail) {
-      refID = Singleton().myID.toString();
+      refID = Singleton().myID;
       if (refID == 0) {
         workingPlayer = Player.empty();
         workingPlayer.error = 1;
@@ -176,67 +179,9 @@ class _ProfileState extends State<Profile> {
       }
     }
     else {
-      refID = Singleton().selectedID.toString();
+      refID = Singleton().selectedID;
     }
-    print(refID);
-    final mainResponse = await http.get('https://www.ecfgrading.org.uk/sandbox/new/api.php?v2/players/code/'+refID);
-
-    if (mainResponse.statusCode == 200) {
-      var json = jsonDecode(mainResponse.body);
-
-      workingPlayer = Player.fromJson(json);
-    }
-
-    else {
-      workingPlayer = Player.empty();
-      workingPlayer.error = 2;
-      return workingPlayer;
-    }
-
-    if (workingPlayer.error == 0) {
-      final game1Response = await http.get('https://www.ecfgrading.org.uk/sandbox/new/api.php?v2/games/Standard/player/$refID/limit/100');
-
-      if (game1Response.statusCode == 200) {
-        var json = jsonDecode(game1Response.body);
-        List games = json["games"];
-        List<Game> gameObjects = [];
-        for (int i = 0; i < games.length; i++) {
-          Game game = Game.fromJson(games[i]);
-          game.gameType = "S";
-          gameObjects.add(game);
-        }
-        workingPlayer.standardGames = gameObjects;
-      }
-
-      else {
-        workingPlayer = Player.empty();
-        workingPlayer.error = 2;
-        return workingPlayer;
-      }
-    }
-
-    if (workingPlayer.error == 0) {
-      final game2Response = await http.get('https://www.ecfgrading.org.uk/sandbox/new/api.php?v2/games/Rapid/player/$refID/limit/100');
-
-      if (game2Response.statusCode == 200) {
-        var json = jsonDecode(game2Response.body);
-        List games = json["games"];
-        List<Game> gameObjects = [];
-        for (int i = 0; i < games.length; i++) {
-          Game game = Game.fromJson(games[i]);
-          game.gameType = "R";
-          gameObjects.add(game);
-        }
-        workingPlayer.rapidGames = gameObjects;
-      }
-
-      else {
-        workingPlayer = Player.empty();
-        workingPlayer.error = 2;
-        return workingPlayer;
-      }
-    }
-    return workingPlayer;
+    return getPlayer(refID);
   }
 
   Widget buildBar(BuildContext context) {
@@ -248,10 +193,10 @@ class _ProfileState extends State<Profile> {
       if (Singleton().isProfileViewDetail) {
         text = "Profile";
         int pCode = 0;
-        if (Singleton().isPeer(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode)) {
+        if (Singleton().isPeer(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode.toString())) {
           pCode = 2;
         }
-        else if (Singleton().isFavourite(Singleton().selectedPlayer.name +"|" + Singleton().selectedPlayer.refCode)) {
+        else if (Singleton().isFavourite(Singleton().selectedPlayer.name +"|" + Singleton().selectedPlayer.refCode.toString())) {
           pCode = 1;
         }
 
@@ -280,6 +225,9 @@ class _ProfileState extends State<Profile> {
     else {
       if (myPlayer.error != 0) {
         print(myPlayer.error);
+        if (myPlayer.error == 1) {
+          return Text("Please set your identity by searching for yourself in the search tab and using the button in the top right.");
+        }
         return Text("Error");
       }
       pages.add(ChessGraph([myPlayer.standardGames], [myPlayer.name]));
@@ -300,14 +248,14 @@ class _ProfileState extends State<Profile> {
                     children: <Widget>[
                       FittedBox(fit:BoxFit.fitWidth, child:Text(myPlayer.name, textScaleFactor: 2)),
                       Padding(padding: EdgeInsets.all(2),),
-                      Text(myPlayer.currentClub.name + "| (" + myPlayer.gender + ") #" + myPlayer.refCode + ", FIDE:" + myPlayer.fide.toString() + " " + myPlayer.nation, textScaleFactor: 1.2, maxLines: 2, textAlign: TextAlign.center,),
+                      Text(myPlayer.currentClub.name + "| (" + myPlayer.gender + ") #" + myPlayer.refCode.toString() + ", FIDE:" + myPlayer.fide.toString() + " " + myPlayer.nation, textScaleFactor: 1.2, maxLines: 2, textAlign: TextAlign.center,),
                     ],
                   ),
                 )
               ),
 
               Expanded(
-                child: PageView.builder(itemBuilder: (context, position) => pages[position]),
+                child: PageView.builder(itemBuilder: (context, position) => pages[position], itemCount: pages.length,),
               ),
 
               Padding(
@@ -375,16 +323,16 @@ class _RelationButtonState extends State<RelationButton> {
     setState(() {
       if (widget.index == 2) {
         widget.index = 0;
-        Singleton().removeFavourite(Singleton().selectedPlayer.name +"|" + Singleton().selectedPlayer.refCode );
-        Singleton().removePeer(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode );
+        Singleton().removeFavourite(playerToSaveString(Singleton().selectedPlayer));
+        Singleton().removePeer(playerToSaveString(Singleton().selectedPlayer));
       }
       else if (widget.index == 1) {
         widget.index = widget.index + 1;
-        Singleton().addPeer(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode );
+        Singleton().addPeer(playerToSaveString(Singleton().selectedPlayer));
       }
       else {
         widget.index = widget.index + 1;
-        Singleton().addFavourite(Singleton().selectedPlayer.name +"|"+ Singleton().selectedPlayer.refCode);
+        Singleton().addFavourite(playerToSaveString(Singleton().selectedPlayer));
       }
     });
   }
@@ -412,12 +360,7 @@ class _IdentityButtonState extends State<IdentityButton> {
       setState(() {
         selected = true;
         
-        if (int.tryParse(Singleton().selectedPlayer.refCode) == null) {
-          Singleton().setMe(int.tryParse(Singleton().selectedPlayer.refCode.substring(0, (Singleton().selectedPlayer.refCode).length-1 )));
-        }
-        else {
-          Singleton().setMe(int.tryParse(Singleton().selectedPlayer.refCode));
-        }
+        Singleton().setMe(Singleton().selectedPlayer.refCode);
       });
     }
   }

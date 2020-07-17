@@ -54,7 +54,7 @@ class Game {
 
 class Player {
   final String name;
-  final String refCode;
+  final int refCode;
   final int memberNumber;
   final String category;
   final DateTime dueDate;
@@ -85,7 +85,7 @@ class Player {
 
   Player.fromJson(Map<String, dynamic> json)
       : name = json['full_name'],
-        refCode = json["ECF_code"],
+        refCode = int.tryParse(json["ECF_code"]) ?? int.tryParse(json["ECF_code"].toString().substring(0, json["ECF_code"].toString().length-1)),
         memberNumber = json["member_no"] == null ? null : int.tryParse(json["member_no"]),
         category = json["category"] == null ? null : json["category"],
         dueDate = json["due_date"] == null ? null : DateTime.tryParse(json["due_date"]),
@@ -103,7 +103,7 @@ class Player {
 
   Player.empty() :
         name = "",
-        refCode = "",
+        refCode = 0,
         memberNumber = 0,
         category = "",
         dueDate = DateTime.now(),

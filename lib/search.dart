@@ -120,14 +120,13 @@ class _SearchState extends State<Search> {
       focused = false;
       Focus child1 = searchBar.child;
       TextField child2 = child1.child;
-      child2.controller.text = "";
+      //child2.controller.text = "";
       FocusScope.of(context).requestFocus(FocusNode());
     });
 
   }
 
   void focusOn(bool focus) {
-
     focused = focus;
   }
 
@@ -151,7 +150,7 @@ class _SearchState extends State<Search> {
           return new ListTile(
             title: Text(add + toShow),
             onTap: () => {
-              Singleton().selectedID = Singleton().favourites[index].split("|")[1],
+              Singleton().selectedID = int.tryParse(Singleton().favourites[index].split("|")[1]),
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => DetailProfile()),
