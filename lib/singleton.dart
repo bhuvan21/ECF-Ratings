@@ -1,6 +1,7 @@
 import 'player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Singleton stores data that needs to be accessed globally
 class Singleton {
   static final Singleton _singleton = Singleton._internal();
 
@@ -19,8 +20,7 @@ class Singleton {
 
   Player selectedPlayer;
 
-
-
+  // Bunch of helper functions which manage peers, favs, and identity, all of which require shared preferences
   void removeFavourite(String fav) async {
     for (int i = 0; i < Singleton().favourites.length; i++) {
       if (Singleton().favourites[i] == fav) {
@@ -48,7 +48,6 @@ class Singleton {
     }
     return false;
   }
-
 
   void removePeer(String peer) async {
     for (int i = 0; i < Singleton().peers.length; i++) {
@@ -78,5 +77,4 @@ class Singleton {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setInt("myID", Singleton().myID);
   }
-
 }

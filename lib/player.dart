@@ -1,3 +1,7 @@
+// This file contains classes which represent all chess related data : clubs, grades, games, players
+// All classes will assign null to their properties if they can't find the relevant data in the passed json
+
+// Clubs can be instantiated from json, have a code and name
 class Club {
   final String code;
   final String name;
@@ -7,19 +11,20 @@ class Club {
       name =  json["club_name"] == null ? null : json["club_name"];
 }
 
+// Grades can be instantiated from json (but won't be able to get a type from this, that has to be assigned separately)
+// Have a date, value and type
 class Grade {
   final DateTime date;
   final String type;
   final int value;
-
   Grade(this.value, this.date, this.type);
   Grade.fromJson(Map<String, dynamic> json, String typ) :
         date = json["effective_date"] == null ? null : DateTime.tryParse(json["effective_date"]),
         type = typ,
         value = json["revised_grade"] == "" ? null : int.tryParse(json["revised_grade"]);
-
 }
 
+// Games have a ton of information, can also be made from json, except for "gameType" which has to be set afterwards
 class Game {
   final DateTime gameDate;
   final String color;
@@ -52,6 +57,7 @@ class Game {
       gameType = "";
 }
 
+// Players have a ton of information too, can be instantiated from JSON, except for  and games (and error), which have to be assigned separately afterwards
 class Player {
   final String name;
   final int refCode;
@@ -72,6 +78,7 @@ class Player {
 
   Player(this.name, this.refCode, this.memberNumber, this.category, this.dueDate, this.fide, this.gender, this.nation, this.lastGame, this.currentClub, this.currentStandard, this.currentRapid, this.clubs, this.standardGames, this.rapidGames, this.error);
 
+  // helper function to take a clubs json and turn it into a list of clubs
   static List<Club> jsonToClubs(Map<String, dynamic> json) {
     List<Club> clubs = [];
     if (!json.containsKey("clubs"))  {
@@ -101,6 +108,7 @@ class Player {
         rapidGames = [],
         error=0;
 
+  // an empty player
   Player.empty() :
         name = "",
         refCode = 0,

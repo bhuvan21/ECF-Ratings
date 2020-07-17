@@ -1,10 +1,6 @@
-import 'dart:convert';
-import 'dart:math';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'player.dart';
+
 import 'search.dart';
 import 'leaderboard.dart';
 import 'profile.dart';
@@ -23,6 +19,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// This is the root widget, managing tabs of other widgets
 class Main extends StatefulWidget {
   @override
   _MainState createState() => _MainState();
@@ -30,15 +27,14 @@ class Main extends StatefulWidget {
 
 class _MainState extends State<Main> with SingleTickerProviderStateMixin  {
 
+  // Used for managing tabs
   int _currentIndex = 0;
-
   List<Widget> _tabList = [
     Leaderboard(),
     Search(),
     Analysis(),
     MyProfile()
   ];
-
   TabController _tabController;
 
   @override
@@ -63,16 +59,12 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin  {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-
+        // When a tab button is pressed, go the relevant widget
         onTap: (currentIndex){
-
-          setState(() {
-            _currentIndex = currentIndex;
-          });
-
+          setState(() {_currentIndex = currentIndex;});
           _tabController.animateTo(_currentIndex);
-
         },
+        // Tab bar button items
         items: [
           BottomNavigationBarItem(
               title: Text("Leaderboard"),
@@ -99,6 +91,7 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin  {
     );
   }
 
+  // Handle loading from saved preferences, or setting defaults on first run
   void _start_preferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     Singleton().myID = prefs.getInt('myID') ?? 0;
@@ -114,29 +107,4 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin  {
       Singleton().peers = prefs.getStringList("peers");
     }
   }
-
 }
-
-class Detail extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            Text("Detail"),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-
-
-}
-

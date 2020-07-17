@@ -8,6 +8,7 @@ import 'player.dart';
 import 'singleton.dart';
 import 'profile.dart';
 
+// Search widget, manages searching for players
 class Search extends StatefulWidget {
   @override
   _SearchState createState() => _SearchState();
@@ -23,8 +24,7 @@ class _SearchState extends State<Search> {
   List<dynamic> search_results = [];
   FocusScope searchBar;
 
-
-
+  // Whenever text input is changed, get new searched players, store data, and reset state with loading over
   _SearchState() {
     _filter.addListener(() {
       setState(() {
@@ -39,6 +39,7 @@ class _SearchState extends State<Search> {
     });
   }
 
+  // Uses search endpoint to look up players who match query
   Future<List<dynamic>> GetSearchedPlayers() async {
     if (_searchText.length <= 3) {
       return [0];
@@ -55,7 +56,6 @@ class _SearchState extends State<Search> {
       }
       return player_objects;
     }
-
     else {
       if (response.statusCode == 404) {
         if (jsonDecode(response.body)["msg"] == "no players found") {
@@ -63,11 +63,8 @@ class _SearchState extends State<Search> {
         }
       }
       return [1];
-
     }
   }
-
-
 
   @override
   void initState() {
@@ -99,13 +96,12 @@ class _SearchState extends State<Search> {
   Widget _buildBar(BuildContext context) {
     return new AppBar(
         centerTitle: true,
-
         leading: _buildSideButton(context),
         title: searchBar
-
     );
   }
 
+  // Show back button if input open
   Widget _buildSideButton(BuildContext context) {
     if (focused) {
       return IconButton(icon:Icon(Icons.arrow_back), onPressed: closeSearch);
@@ -115,6 +111,7 @@ class _SearchState extends State<Search> {
     }
   }
 
+  // dismiss keyboard when search dismissed
   void closeSearch() {
     setState(() {
       focused = false;
@@ -134,8 +131,9 @@ class _SearchState extends State<Search> {
     focused = false;
   }
 
+  // builds list of search results from saved result of search query
   Widget _buildList() {
-
+    // Show peers + favs if search is empty
     if (_searchText.isEmpty) {
       return ListView.builder(
         itemCount: Singleton().favourites.length ,
@@ -146,7 +144,6 @@ class _SearchState extends State<Search> {
           }
 
           String toShow = Singleton().favourites[index].split("|")[0];
-
           return new ListTile(
             title: Text(add + toShow),
             onTap: () => {
@@ -156,21 +153,23 @@ class _SearchState extends State<Search> {
                 MaterialPageRoute(builder: (context) => DetailProfile()),
               )
             }
-
           );
         },
       );
     }
     else {
+      // If loading show indicator
       if (loading) {
         return Center(
             child:CircularProgressIndicator()
         );
       }
+      // If no results, say so
       else {
         if (search_results.length == 0) {
           return Text("no results found");
         }
+        // If short query, say so
         else if (search_results[0] is int) {
           int error_code = search_results[0];
           if (error_code == 0) {
@@ -180,7 +179,7 @@ class _SearchState extends State<Search> {
             return Text("Wifi issues?");
           }
         }
-
+        // If successful, return list of results
         else {
           List<Player> player_list = search_results;
           return ListView.builder(
