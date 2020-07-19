@@ -1,4 +1,5 @@
 import 'player.dart';
+import 'helpers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Singleton stores data that needs to be accessed globally
@@ -19,6 +20,14 @@ class Singleton {
   List<String> peers;
 
   Player selectedPlayer;
+
+  LeaderboardPrefs leaderboardPreference;
+
+  void setFilterPrefs(LeaderboardPrefs prefs) async {
+    Singleton().leaderboardPreference = prefs;
+    SharedPreferences shared = await SharedPreferences.getInstance();
+    shared.setStringList("leaderboard", [prefs.gameType, prefs.nations, prefs.ageLimit, prefs.genders, prefs.metric]);
+  }
 
   // Bunch of helper functions which manage peers, favs, and identity, all of which require shared preferences
   void removeFavourite(String fav) async {

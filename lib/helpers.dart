@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'player.dart';
 
-// This file contains a bunch of helper functions, used across multiple pages
+// This file contains a bunch of helper functions/classes, used across multiple pages
 
 // Converts a player to a string, retaining basic display data, and further lookup refID
 String playerToSaveString(Player player) {
@@ -78,4 +78,15 @@ Future<Player> getPlayer(int refID) async {
     }
   }
   return workingPlayer;
+}
+
+
+
+class LeaderboardPrefs {
+  String gameType;
+  String nations;
+  String ageLimit;
+  String genders;
+  String metric;
+  LeaderboardPrefs(this.gameType, this.nations, this.ageLimit, this.genders, this.metric);
 }

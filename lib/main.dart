@@ -6,6 +6,7 @@ import 'leaderboard.dart';
 import 'profile.dart';
 import 'analysis.dart';
 import 'singleton.dart';
+import 'helpers.dart';
 
 void main() => runApp(MyApp());
 
@@ -101,10 +102,15 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin  {
       prefs.setStringList("peers", []);
       Singleton().favourites = [];
       Singleton().peers = [];
+      LeaderboardPrefs leaderboard = LeaderboardPrefs("S", "ENG", "none", "both", "player_grade");
+      Singleton().setFilterPrefs(leaderboard);
     }
     else {
       Singleton().favourites = prefs.getStringList("favourites");
       Singleton().peers = prefs.getStringList("peers");
+      List<String> args = prefs.getStringList("leaderboard");
+      Singleton().leaderboardPreference = LeaderboardPrefs(args[0], args[1], args[2], args[3], args[4]);
+      print(Singleton().leaderboardPreference);
     }
   }
 }

@@ -128,3 +128,21 @@ class Player {
         error = 10;
 }
 
+class LeaderboardPlayer{
+  int refCode;
+  String name;
+  int standard;
+  String gender;
+  int rapid;
+  int standardImprovement;
+  int rapidImprovement;
+  LeaderboardPlayer.fromJson(Map<String, dynamic> json)
+      : name = json['Name'],
+        refCode = int.tryParse(json["PlayerCode"]) ?? int.tryParse(json["PlayerCode"].toString().substring(0, json["PlayerCode"].toString().length-1)),
+        standard = json["Grade"] == null ? null : int.tryParse(json['Grade']),
+        rapid = json["RGrade"] == null ? null : int.tryParse(json['RGrade']),
+        gender = json["Sex"],
+        standardImprovement = json["Supdate"] == null ? null : int.tryParse(json['Supdate']),
+        rapidImprovement = json["Rupdate"] == null ? null : int.tryParse(json['Rupdate']);
+
+}
