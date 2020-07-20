@@ -38,10 +38,18 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin  {
   ];
   TabController _tabController;
 
+  bool loading = true;
+
   @override
   void initState() {
     super.initState();
-    _start_preferences();
+    setState(() {
+      _start_preferences().then((t) {
+        setState(() {
+          loading = false;
+        });
+      });
+    });
     _tabController = TabController(vsync: this, length: _tabList.length);
   }
 
@@ -53,6 +61,10 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin  {
 
   @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return Scaffold(body:Center(child: CircularProgressIndicator(),)
+      );
+    }
     return Scaffold(
       body: TabBarView(
         controller: _tabController,
@@ -93,22 +105,24 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin  {
   }
 
   // Handle loading from saved preferences, or setting defaults on first run
-  void _start_preferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    Singleton().myID = prefs.getInt('myID') ?? 0;
+  Future<void> _start_preferences() async {
 
-    if (!prefs.containsKey("favourites")) {
-      prefs.setStringList("favourites", []);
-      prefs.setStringList("peers", []);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    Singleton().preferences = prefs;
+    Singleton().myID = Singleton().preferences.getInt('myID') ?? 0;
+
+    if (!Singleton().preferences.containsKey("favourites")) {
+      Singleton().preferences.setStringList("favourites", []);
+      Singleton().preferences.setStringList("peers", []);
       Singleton().favourites = [];
       Singleton().peers = [];
       LeaderboardPrefs leaderboard = LeaderboardPrefs("S", "ENG", "none", "both", "player_grade");
       Singleton().setFilterPrefs(leaderboard);
     }
     else {
-      Singleton().favourites = prefs.getStringList("favourites");
-      Singleton().peers = prefs.getStringList("peers");
-      List<String> args = prefs.getStringList("leaderboard");
+      Singleton().favourites = Singleton().preferences.getStringList("favourites");
+      Singleton().peers = Singleton().preferences.getStringList("peers");
+      List<String> args = Singleton().preferences.getStringList("leaderboard");
       Singleton().leaderboardPreference = LeaderboardPrefs(args[0], args[1], args[2], args[3], args[4]);
       print(Singleton().leaderboardPreference);
     }

@@ -10,7 +10,10 @@ class Singleton {
     return _singleton;
   }
 
+
   Singleton._internal();
+
+  SharedPreferences  preferences;
 
   bool isProfileViewDetail;
   int myID;
@@ -25,8 +28,8 @@ class Singleton {
 
   void setFilterPrefs(LeaderboardPrefs prefs) async {
     Singleton().leaderboardPreference = prefs;
-    SharedPreferences shared = await SharedPreferences.getInstance();
-    shared.setStringList("leaderboard", [prefs.gameType, prefs.nations, prefs.ageLimit, prefs.genders, prefs.metric]);
+    preferences.setStringList("leaderboard", [prefs.gameType, prefs.nations, prefs.ageLimit, prefs.genders, prefs.metric]);
+    print("done!");
   }
 
   // Bunch of helper functions which manage peers, favs, and identity, all of which require shared preferences
@@ -36,8 +39,7 @@ class Singleton {
         Singleton().favourites.removeAt(i);
       }
     }
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setStringList("favourites", Singleton().favourites);
+    preferences.setStringList("favourites", Singleton().favourites);
   }
 
   bool isFavourite(String fav) {
@@ -65,25 +67,21 @@ class Singleton {
       }
     }
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setStringList("peers", Singleton().peers);
+    preferences.setStringList("peers", Singleton().peers);
   }
 
   void addPeer(String peer) async {
     Singleton().peers.add(peer);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setStringList("peers", Singleton().peers);
+    preferences.setStringList("peers", Singleton().peers);
   }
 
   void addFavourite(String fav) async {
     Singleton().favourites.add(fav);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setStringList("favourites", Singleton().favourites);
+    preferences.setStringList("favourites", Singleton().favourites);
   }
 
   void setMe(int me) async {
     Singleton().myID = me;
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setInt("myID", Singleton().myID);
+    preferences.setInt("myID", Singleton().myID);
   }
 }

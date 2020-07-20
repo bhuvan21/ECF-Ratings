@@ -50,7 +50,6 @@ class _LeaderboardState extends State<Leaderboard> {
   @override
   void initState() {
     super.initState();
-
     setState(() {
       loading = true;
       getAllInfo().then((players){
@@ -63,15 +62,12 @@ class _LeaderboardState extends State<Leaderboard> {
   }
 
   Future<List<LeaderboardPlayer>> getAllInfo() async {
-    SharedPreferences p = await SharedPreferences.getInstance();
     List<LeaderboardPlayer> players = [];
-
-    while (!p.containsKey("leaderboard")) {
+    // Wait until leaderboard filtering info has been gotten from device
+    while (Singleton().leaderboardPreference == null) {
     }
 
-    List<String> args = p.getStringList("leaderboard");
-    LeaderboardPrefs prefs = LeaderboardPrefs(args[0], args[1], args[2], args[3], args[4]);
-    print(prefs);
+    LeaderboardPrefs prefs = Singleton().leaderboardPreference;
     // Get main data
     final mainResponse = await http.get("https://www.ecfgrading.org.uk/v2/app/list_top_players.php?domain=${prefs.gameType}&age_limit=${prefs.ageLimit}&age_col=Age&nation=${prefs.nations}&gender=${prefs.genders}&type=${prefs.metric}&format=json");
     if (mainResponse.statusCode == 200) {
@@ -91,11 +87,6 @@ class _LeaderboardState extends State<Leaderboard> {
     if (loading) {
       return Center(child: CircularProgressIndicator(),);
     }
-
-
-
-
-
 
     return ListView.builder(
       itemCount: myPlayers.length,
@@ -134,7 +125,6 @@ class _LeaderboardState extends State<Leaderboard> {
         if (info2 == "null") {
           info2 = "0";
         }
-
 
         return new ListTile(
           title: Text(myPlayers[index].name + " (${player.gender})"),
@@ -182,9 +172,7 @@ class _LeaderboardState extends State<Leaderboard> {
       },
     );
   }
-
 }
-
 
 class LeaderboardFilter extends StatefulWidget {
   @override
@@ -225,6 +213,7 @@ class _LeaderboardFilterState extends State<LeaderboardFilter> {
     for (int i = 0; i < ages.length; i++) {
       pickerwidgs.add(Center(child:Text(ages[i].toString())));
     }
+
   }
 
   void _pickerHandler() {
@@ -310,7 +299,7 @@ class _LeaderboardFilterState extends State<LeaderboardFilter> {
                       prefs.nations = "ENG";
                     });
                   }
-                  Singleton().setFilterPrefs(prefs);
+                  Singleton().setFilterPrefs(prefs, );
                 },
               )
             ],
