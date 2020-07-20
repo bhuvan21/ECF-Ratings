@@ -79,7 +79,7 @@ class _ChessGraphState extends State<ChessGraph> {
 
     // Return a padded linechart and legend
     return Padding(
-      padding: EdgeInsets.fromLTRB(15, 0, 30, 0),
+      padding: EdgeInsets.fromLTRB(15, 7, 30, 0),
       child:Column(children: <Widget>[
         LineChart(mainData()),
         buildLegend()
