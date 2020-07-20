@@ -7,8 +7,8 @@ A cross platform re-write of ECF-App, designed with the new ECF Ratings system i
 - Add to persisting peers and favourites  
 - Analyse performance against peers with graphical view  
 - View all games for profiles  
+- Leaderboard with options
 
 ## TODO
 - Improve UI
-- Add leaderboard with filtering
 - More info in analysis?
