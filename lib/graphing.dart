@@ -71,7 +71,7 @@ class _ChessGraphState extends State<ChessGraph> {
       // Don't graph players who have no games
       if (newData[i].length == 0) {
         newData.removeAt(i);
-        widget.names.removeAt(i);
+        //widget.names.removeAt(i);
       }
     }
     // Overwrite old data with filtered data
