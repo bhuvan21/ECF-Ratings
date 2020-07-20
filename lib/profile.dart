@@ -262,9 +262,9 @@ class _ProfileState extends State<Profile> {
           child: Column(
             children : <Widget> [
               Padding(
-                padding: EdgeInsets.fromLTRB(16, 16, 16, 5),
+                padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
                 child:Container( // Basic information is stored in a few labels
-                  height: 100,
+                  height: 80,
                   child:Column(
                     children: <Widget>[
                       FittedBox(fit:BoxFit.fitWidth, child:Text(myPlayer.name, textScaleFactor: 2)), // The name is adjusted to fit properly
