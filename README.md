@@ -1,5 +1,5 @@
 # ECF Ratings
-A cross platform re-write of ECF-App, designed with the new ECF Ratings system in mind.  
+A cross platform re-write of ECF-App, designed with the new ECF Ratings system in mind. This should hopefully be released by early 2021.
 
 ## Features
 - Profile View  
